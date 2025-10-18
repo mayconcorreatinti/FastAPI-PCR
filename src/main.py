@@ -1,8 +1,11 @@
 from fastapi import FastAPI
+from src.routers.recipes import app as recipes
 
 
 app = FastAPI()
 
-@app.get('/')
+@app.get("/")
 def root():
-    return 'hello world'
+    return "hello world"
+
+app.include_router(recipes)
