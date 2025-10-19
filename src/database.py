@@ -22,3 +22,13 @@ class Mysqldb:
             host = self._host,
             database = self._database
         )
+    
+    async def _query(self,query:str,data=None) -> list:
+        if not self.conn:
+            self.conn = await self._connection()
+        async with await self.conn.cursor(dictionary=True) as cursor:
+            await cursor.execute(query,data)
+            response = await cursor.fetchall()
+            if data:
+                await self.conn.commit()
+            return response
