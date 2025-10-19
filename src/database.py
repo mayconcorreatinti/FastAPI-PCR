@@ -5,7 +5,6 @@ import asyncio
 import os
 
 
-
 engine = create_async_engine(os.getenv("DATABASE_URL"), echo=True)
 session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
 
