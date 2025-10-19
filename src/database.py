@@ -1,15 +1,24 @@
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
-from src.models import Base
-import asyncio
-import os
+import os 
+from mysql.connector.aio import connect
+from dotenv import load_dotenv
 
 
-engine = create_async_engine(os.getenv("DATABASE_URL"), echo=True)
-session_local = sessionmaker(autocommit=False, autoflush=False, bind=engine, class_=AsyncSession)
+load_dotenv()
 
-async def create_table():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
 
-asyncio.run(create_table())
+class Mysqldb:
+    
+    def __init__(self):
+        self._host = os.getenv('HOST')
+        self._user = os.getenv('USER')
+        self._password = os.getenv('PASSWORD')
+        self._database = os.getenv('DATABASE')
+        self.conn = None
+
+    async def _connection(self):
+        return await connect(
+            user = self._user,
+            password = self._password,
+            host = self._host,
+            database = self._database
+        )
