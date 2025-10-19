@@ -1,14 +1,13 @@
 from fastapi import APIRouter
 from src.schemas.users import User,UserResponse
+from src.database import Mysqldb
 
 
 app = APIRouter(tags=["users"],prefix="/users")
+db = Mysqldb()
 
 @app.post('/',response_model=UserResponse)
 def register_user(account:User):
-    user = {
-        "id":2,
-        "username":account.username,
-        "email":account.email
-    }
+    user = db.select_user_from_table(account.username,account.email)
     return user
+    
