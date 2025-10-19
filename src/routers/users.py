@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from src.schemas.users import User,UserResponse
+from src.models.users import User,UserResponse
 from src.database import Mysqldb
 
 
