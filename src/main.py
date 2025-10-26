@@ -5,7 +5,7 @@ from src.routers.users import app as users
 
 app = FastAPI()
 
-@app.get("/")
+@app.get("/") 
 def root():
     return "hello world"
 

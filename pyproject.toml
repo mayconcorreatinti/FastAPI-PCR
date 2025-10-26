@@ -1,5 +1,5 @@
 [project]
-name = "new-project"
+name = "fastapi-pcr"
 version = "0.1.0"
 description = ""
 authors = [
@@ -10,12 +10,10 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi (>=0.119.0,<0.120.0)",
     "aiomysql (>=0.2.0,<0.3.0)",
-    "mysql-connector-python (>=9.4.0,<10.0.0)",
     "python-dotenv (>=1.1.1,<2.0.0)",
+    "mysql-connector-python (>=9.4.0,<10.0.0)",
+    "pwdlib[argon2] (>=0.3.0,<0.4.0)",
 ]
-
-[tool.poetry]
-packages = [{include = "new_project", from = "src"}]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
