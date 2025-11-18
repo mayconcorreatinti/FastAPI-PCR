@@ -1,6 +1,6 @@
 from fastapi import FastAPI
-from src.routers.recipes import app as recipes
-from src.routers.users import app as users
+from pcr.routers.recipes import app as recipes
+from pcr.routers.users import app as users
 
 
 app = FastAPI()

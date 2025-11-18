@@ -1,0 +1,6 @@
+fastapi
+aiomysql
+python-dotenv
+mysql-connector-python
+pwdlib[argon2]
+bcrypt
