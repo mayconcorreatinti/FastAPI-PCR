@@ -32,7 +32,9 @@ class Mysqldb:
                 await self.conn.commit()
             return response
     
-    async def select_user_from_table(self,username:str,email:str = '') -> dict:
+    async def select_user_from_table(
+        self,username:str = '',email:str = ''
+    ) -> dict:
         users = await self._query("""
             SELECT id,
                 username,
@@ -47,9 +49,15 @@ class Mysqldb:
         for user in users:
             return user
     
-    async def insert_user_from_table(self,data:tuple) -> None:
+    async def insert_user_into_table(self,data:tuple) -> None:
         await self._query("""
             INSERT INTO users(username,email,password)
             VALUES (%s,%s,%s);
             """,data
+        )
+    
+    async def delete_user_from_table(self,id:int) -> None:
+        await self._query("""
+            DELETE FROM USERS WHERE ID = %s;
+            """
         )

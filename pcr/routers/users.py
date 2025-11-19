@@ -1,14 +1,16 @@
-from fastapi import APIRouter,HTTPException
-from pcr.models.users import User,UserResponse
+from fastapi import APIRouter,HTTPException,Depends
+from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
+from pcr.models.users import User,UserResponse,Token
 from pcr.database import Mysqldb
 from http import HTTPStatus
-from pcr.security import hash
+from pcr.security import hash,verify_password,create_access_token
+from typing import Annotated
 
 
 app = APIRouter(tags=["users"],prefix="/users")
 db = Mysqldb()
 
-@app.post('/',response_model = UserResponse)
+@app.post("/",response_model = UserResponse)
 async def register_user(account:User):
     user = await db.select_user_from_table(account.username,account.email)
     if user:
@@ -23,7 +25,7 @@ async def register_user(account:User):
                 status_code = HTTPStatus.CONFLICT
             )
     
-    await db.insert_user_from_table(
+    await db.insert_user_into_table(
         (
             account.username,
             account.email,
@@ -38,5 +40,22 @@ async def register_user(account:User):
         "email":user["email"]
     }
 
+@app.post("/token",response_model = Token )
+async def create_token(
+    form_data : Annotated[OAuth2PasswordRequestForm,Depends()]
+):
+    user = await db.select_user_from_table(email=form_data.username)
+    if not user or not verify_password(form_data.password,user["password"]):
+        raise HTTPException(
+            detail = "Incorrect username or password!",
+            status_code = HTTPStatus.FORBIDDEN
+        )
     
+    token = create_access_token({"email":form_data.username})
+    return {
+        "access_token":token,
+        "token_type": "Bearer"
+    }
+
+
     
