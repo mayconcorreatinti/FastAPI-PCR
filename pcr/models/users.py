@@ -11,6 +11,9 @@ class UserResponse(BaseModel):
     username: str
     email: EmailStr
 
+class Users(BaseModel):
+    users: list[UserResponse]
+    
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -18,6 +21,6 @@ class Token(BaseModel):
 class FormData(BaseModel):
     email: EmailStr
     password: str
-    
+
 class Message(BaseModel):
     Message: str

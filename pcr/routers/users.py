@@ -1,6 +1,6 @@
 from fastapi import APIRouter,HTTPException,Depends
 from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
-from pcr.models.users import User,UserResponse,Token,Message,FormData
+from pcr.models.users import User,UserResponse,Token,Message,Users
 from pcr.database import Mysqldb
 from http import HTTPStatus
 from pcr.security import (
@@ -11,6 +11,11 @@ from typing import Annotated
 
 app = APIRouter(tags=["users"],prefix="/users")
 db = Mysqldb()
+
+@app.get("/",response_model = Users)
+async def get_users():
+    users = await db.select_users_from_table()
+    return {"users":users}
 
 @app.post("/",response_model = UserResponse)
 async def register_user(account:User):
@@ -67,10 +72,6 @@ id:int,account:User,authenticated_user = Depends(get_current_user)
             status_code = HTTPStatus.UNAUTHORIZED,
             detail = "unauthorized request"
         )
-    user = await db.select_user_from_table(
-        username=account.username,
-        email=account.email
-    )
     await verify_credentials(
         account.username,
         account.email
