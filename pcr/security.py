@@ -20,6 +20,20 @@ def hash(password: str):
 def verify_password(password, hash):
     return password_hash.verify(password, hash)
 
+async def verify_credentials(username:str,email:str):
+    user = await db.select_user_from_table(username,email)
+    if user:
+        if user["username"] == username:
+            raise HTTPException(
+                detail = "This name already exists!",
+                status_code = HTTPStatus.CONFLICT
+            )
+        elif user["email"] == email:
+            raise HTTPException(
+                detail = "This email already exists!",
+                status_code = HTTPStatus.CONFLICT
+            )
+
 def create_access_token(data:dict):
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + timedelta(

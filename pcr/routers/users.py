@@ -4,7 +4,7 @@ from pcr.models.users import User,UserResponse,Token,Message,FormData
 from pcr.database import Mysqldb
 from http import HTTPStatus
 from pcr.security import (
-    hash,verify_password,create_access_token,get_current_user
+    hash,verify_password,create_access_token,get_current_user,verify_credentials
 )
 from typing import Annotated
 
@@ -14,18 +14,10 @@ db = Mysqldb()
 
 @app.post("/",response_model = UserResponse)
 async def register_user(account:User):
-    user = await db.select_user_from_table(account.username,account.email)
-    if user:
-        if user["username"] == account.username:
-            raise HTTPException(
-                detail = "This name already exists!",
-                status_code = HTTPStatus.CONFLICT
-            )
-        elif user["email"] == account.email:
-            raise HTTPException(
-                detail = "This email already exists!",
-                status_code = HTTPStatus.CONFLICT
-            )
+    await verify_credentials(
+        account.username,
+        account.email
+    )
     await db.insert_user_into_table(
         (
             account.username,
@@ -79,17 +71,10 @@ id:int,account:User,authenticated_user = Depends(get_current_user)
         username=account.username,
         email=account.email
     )
-    if user:
-        if user["username"] == account.username:
-            raise HTTPException(
-                detail = "This name already exists!",
-                status_code = HTTPStatus.CONFLICT
-            )
-        elif user["email"] == account.email:
-            raise HTTPException(
-                detail = "This email already exists!",
-                status_code = HTTPStatus.CONFLICT
-            )
+    await verify_credentials(
+        account.username,
+        account.email
+    )
     await db.update_user_from_table(
         (
             account.username,
