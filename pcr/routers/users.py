@@ -42,15 +42,15 @@ async def register_user(account:User):
 
 @app.post("/token",response_model = Token)
 async def create_token(
-    form_data : FormData
+    form_data : Annotated[OAuth2PasswordRequestForm,Depends()]
 ):
-    user = await db.select_user_from_table(email=form_data.email)
+    user = await db.select_user_from_table(email=form_data.username)
     if not user or not verify_password(form_data.password,user["password"]):
         raise HTTPException(
             detail = "Incorrect username or password!",
             status_code = HTTPStatus.FORBIDDEN
         )
-    token = create_access_token({"sub":form_data.email})
+    token = create_access_token({"sub":form_data.username})
     return {
         "access_token":token,
         "token_type": "Bearer"
@@ -65,4 +65,38 @@ async def delete_user(id:int,authenticated_user = Depends(get_current_user)):
         )
     await db.delete_user_from_table((id,))
     return {"Message": "User deleted!"}
+
+@app.put("/{id}",response_model = Message)
+async def update_user(
+id:int,account:User,authenticated_user = Depends(get_current_user)
+):
+    if id != authenticated_user["id"]:
+        raise HTTPException(
+            status_code = HTTPStatus.UNAUTHORIZED,
+            detail = "unauthorized request"
+        )
+    user = await db.select_user_from_table(
+        username=account.username,
+        email=account.email
+    )
+    if user:
+        if user["username"] == account.username:
+            raise HTTPException(
+                detail = "This name already exists!",
+                status_code = HTTPStatus.CONFLICT
+            )
+        elif user["email"] == account.email:
+            raise HTTPException(
+                detail = "This email already exists!",
+                status_code = HTTPStatus.CONFLICT
+            )
+    await db.update_user_from_table(
+        (
+            account.username,
+            account.email,
+            account.password,
+            id
+        )
+    )
+    return {"Message":"updated user"}
     

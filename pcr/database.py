@@ -61,3 +61,13 @@ class Mysqldb:
             DELETE FROM users WHERE ID = %s;
             """,data
         )
+    
+    async def update_user_from_table(self,data:tuple):
+        await self._query("""
+            UPDATE users  SET
+                username = %s,
+                email = %s,
+                password = %s
+            WHERE id = %s
+        """,data)
+        
