@@ -1,11 +1,18 @@
 from pwdlib import PasswordHash 
 from pcr.database import Mysqldb
 from datetime import datetime, timedelta, timezone
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends,HTTPException
+from http import HTTPStatus
+from typing import Annotated
+from jwt.exceptions import InvalidTokenError
 import os
 import jwt
 
 
 password_hash = PasswordHash.recommended()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token")
+db = Mysqldb()
 
 def hash(password: str):
     return password_hash.hash(password)
@@ -26,4 +33,23 @@ def create_access_token(data:dict):
     )
     return encoded_jwt
 
-
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    credentials_exception = HTTPException(
+        status_code=HTTPStatus.UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(
+            token,
+            os.getenv("SECRET_KEY"),
+            algorithms=[os.getenv("ALGORITHM")])
+        email = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+    except InvalidTokenError:
+        raise credentials_exception
+    user = await db.select_user_from_table(email=email)
+    if user is None:
+        raise credentials_exception
+    return user

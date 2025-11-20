@@ -56,8 +56,8 @@ class Mysqldb:
             """,data
         )
     
-    async def delete_user_from_table(self,id:int) -> None:
+    async def delete_user_from_table(self,data:tuple) -> None:
         await self._query("""
-            DELETE FROM USERS WHERE ID = %s;
-            """
+            DELETE FROM users WHERE ID = %s;
+            """,data
         )
