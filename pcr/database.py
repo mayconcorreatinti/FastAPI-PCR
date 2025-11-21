@@ -92,5 +92,6 @@ class CRUDUsers:
                 email = %s,
                 password = %s
             WHERE id = %s
-        """,data)
+        """,data
+        )
         
