@@ -1,5 +1,5 @@
 from pwdlib import PasswordHash 
-from pcr.database import Mysqldb
+from pcr.database import CRUDUsers
 from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends,HTTPException
@@ -12,7 +12,7 @@ import jwt
 
 password_hash = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token")
-db = Mysqldb()
+manage_users = CRUDUsers()
 
 def hash(password: str):
     return password_hash.hash(password)
@@ -21,7 +21,7 @@ def verify_password(password, hash):
     return password_hash.verify(password, hash)
 
 async def verify_credentials(username:str,email:str):
-    user = await db.select_user_from_table(username,email)
+    user = await manage_users.select_user_from_table(username,email)
     if user:
         if user["username"] == username:
             raise HTTPException(
@@ -63,7 +63,7 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
             raise credentials_exception
     except InvalidTokenError:
         raise credentials_exception
-    user = await db.select_user_from_table(email=email)
+    user = await manage_users.select_user_from_table(email=email)
     if user is None:
         raise credentials_exception
     return user

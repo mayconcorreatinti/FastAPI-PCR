@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Mysqldb:
-    
+
     def __init__(self):
         self._host = os.getenv('HOST')
         self._user = os.getenv('USER')
@@ -14,12 +14,18 @@ class Mysqldb:
         self._database = os.getenv('DATABASE')
         self.conn = None
 
+
+class ConnectionDB:
+
+    def __init__(self):
+        self.db = Mysqldb()
+
     async def _connection(self):
         return await connect(
-            user = self._user,
-            password = self._password,
-            host = self._host,
-            database = self._database
+            user = self.db._user,
+            password = self.db._password,
+            host = self.db._host,
+            database = self.db._database
         )
     
     async def _query(self,query:str,data=None) -> list:
@@ -31,9 +37,15 @@ class Mysqldb:
             if data:
                 await self.conn.commit()
             return response
-    
+
+
+class CRUDUsers:
+
+    def __init__(self):
+        self.connection = ConnectionDB()
+
     async def select_users_from_table(self) -> dict:
-        users = await self._query("""
+        users = await self.connection._query("""
             SELECT id,
                 username,
                 email
@@ -46,7 +58,7 @@ class Mysqldb:
     async def select_user_from_table(
         self,username:str = '',email:str = ''
     ) -> dict:
-        users = await self._query("""
+        users = await self.connection._query("""
             SELECT id,
                 username,
                 email,
@@ -61,20 +73,20 @@ class Mysqldb:
             return user
     
     async def insert_user_into_table(self,data:tuple) -> None:
-        await self._query("""
+        await self.connection._query("""
             INSERT INTO users(username,email,password)
             VALUES (%s,%s,%s);
             """,data
         )
     
     async def delete_user_from_table(self,data:tuple) -> None:
-        await self._query("""
+        await self.connection._query("""
             DELETE FROM users WHERE ID = %s;
             """,data
         )
     
     async def update_user_from_table(self,data:tuple):
-        await self._query("""
+        await self.connection._query("""
             UPDATE users  SET
                 username = %s,
                 email = %s,

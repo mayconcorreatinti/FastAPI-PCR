@@ -1,7 +1,7 @@
 from fastapi import APIRouter,HTTPException,Depends
-from fastapi.security import OAuth2PasswordBearer,OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm
 from pcr.models.users import User,UserResponse,Token,Message,Users
-from pcr.database import Mysqldb
+from pcr.database import CRUDUsers
 from http import HTTPStatus
 from pcr.security import (
     hash,verify_password,create_access_token,get_current_user,verify_credentials
@@ -10,11 +10,11 @@ from typing import Annotated
 
 
 app = APIRouter(tags=["users"],prefix="/users")
-db = Mysqldb()
+manage_users = CRUDUsers()
 
 @app.get("/",response_model = Users)
 async def get_users():
-    users = await db.select_users_from_table()
+    users = await manage_users.select_users_from_table()
     return {"users":users}
 
 @app.post("/",response_model = UserResponse)
@@ -23,14 +23,14 @@ async def register_user(account:User):
         account.username,
         account.email
     )
-    await db.insert_user_into_table(
+    await manage_users.insert_user_into_table(
         (
             account.username,
             account.email,
             hash(account.password)
         )
     )
-    user = await db.select_user_from_table(account.username)
+    user = await manage_users.select_user_from_table(account.username)
     return {
         "id":user["id"],
         "username":user["username"],
@@ -41,7 +41,7 @@ async def register_user(account:User):
 async def create_token(
     form_data : Annotated[OAuth2PasswordRequestForm,Depends()]
 ):
-    user = await db.select_user_from_table(email=form_data.username)
+    user = await manage_users.select_user_from_table(email=form_data.username)
     if not user or not verify_password(form_data.password,user["password"]):
         raise HTTPException(
             detail = "Incorrect username or password!",
@@ -60,7 +60,7 @@ async def delete_user(id:int,authenticated_user = Depends(get_current_user)):
             status_code = HTTPStatus.UNAUTHORIZED,
             detail = "unauthorized request"
         )
-    await db.delete_user_from_table((id,))
+    await manage_users.delete_user_from_table((id,))
     return {"Message": "User deleted!"}
 
 @app.put("/{id}",response_model = Message)
@@ -76,7 +76,7 @@ id:int,account:User,authenticated_user = Depends(get_current_user)
         account.username,
         account.email
     )
-    await db.update_user_from_table(
+    await manage_users.update_user_from_table(
         (
             account.username,
             account.email,
