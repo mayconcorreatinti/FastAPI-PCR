@@ -14,10 +14,10 @@ password_hash = PasswordHash.recommended()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token")
 manage_users = CRUDUsers()
 
-def hash(password: str):
+def hash(password: str) -> str:
     return password_hash.hash(password)
 
-def verify_password(password, hash):
+def verify_password(password, hash) -> bool:
     return password_hash.verify(password, hash)
 
 async def verify_credentials(username:str,email:str):

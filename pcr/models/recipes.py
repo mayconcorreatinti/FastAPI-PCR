@@ -1,11 +1,44 @@
 from pydantic import BaseModel,Field
-from typing import List,Dict
+from typing import List
 
+
+class Ingredient(BaseModel):
+    name: str
+    quantity: str
+
+class Instruction(BaseModel):
+    step_number: int
+    description: str
 
 class Recipe(BaseModel):
-    title: str
-    description: str 
-    ingredients: List[Dict] 
-    instructions: List[Dict]
-    serve: str
-    difficulty: str
+    name: str
+    description: str
+    ingredients: List[Ingredient] = Field(
+        example = [
+            {
+                "name": "string",
+                "quantity": "string"
+            },
+            {
+                "name": "string",
+                "quantity": "string"
+            }
+        ]
+    )
+    instructions: List[Instruction] = Field(
+        example = [
+            {
+                "step_number": 1,
+                "description": "string"
+            },
+            {
+                "step_number": 2,
+                "description": "string"
+            }
+        ]
+    )
+    serve: str | None
+    difficulty: str | None
+
+class RecipeResponse(Recipe):
+    id: int
