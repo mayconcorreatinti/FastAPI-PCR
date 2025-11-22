@@ -49,7 +49,7 @@ class CRUDUsers:
             SELECT id,
                 username,
                 email
-            FROM users
+            FROM user
             LIMIT 20;
             """
         )
@@ -63,7 +63,7 @@ class CRUDUsers:
                 username,
                 email,
                 password
-            FROM users
+            FROM user
             WHERE username = (%s) or
             email = (%s)
             LIMIT 1;
@@ -74,20 +74,20 @@ class CRUDUsers:
     
     async def insert_user_into_table(self,data:tuple) -> None:
         await self.connection._query("""
-            INSERT INTO users(username,email,password)
+            INSERT INTO user(username,email,password)
             VALUES (%s,%s,%s);
             """,data
         )
     
     async def delete_user_from_table(self,data:tuple) -> None:
         await self.connection._query("""
-            DELETE FROM users WHERE ID = %s;
+            DELETE FROM user WHERE ID = %s;
             """,data
         )
     
     async def update_user_from_table(self,data:tuple):
         await self.connection._query("""
-            UPDATE users  SET
+            UPDATE user  SET
                 username = %s,
                 email = %s,
                 password = %s
